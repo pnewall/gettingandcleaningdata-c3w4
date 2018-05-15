@@ -1,4 +1,3 @@
-
 #
 # start by ensuring necessary packages available\
 #
@@ -17,6 +16,7 @@ library(reshape2)
 # get local copy of dataset
 #
 
+print("preparing input file ...")
 fileName <- "./c3w4.zip"
 fileUrl = "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 if(!file.exists(fileName)) {
@@ -27,6 +27,7 @@ if(!file.exists(fileName)) {
 # set up data frames for subsequent merging etc
 #
 
+print("reading input file ...")
 
 df_alabels <- read.table(unz("./c3w4.zip", "UCI HAR Dataset/activity_labels.txt"), header = FALSE, sep = "")
 
@@ -45,9 +46,10 @@ df_subj_test <- read.table(unz("./c3w4.zip", "UCI HAR Dataset/test/subject_test.
 df_subj_train <- read.table(unz("./c3w4.zip", "UCI HAR Dataset/train/subject_train.txt"), header = FALSE, sep = "")
 
 #
-# set up column names to enable merging\
+# set up column names to enable merging
 #
 
+print("building combined test and train dataset ...")
 df_alabels <- rename(df_alabels, activity_id = V1, activity_name = V2)
 df_y_test <- rename(df_y_test, activity_id = V1)
 df_y_train <- rename(df_y_train, activity_id = V1)
@@ -103,6 +105,7 @@ df_train_all <- cbind(df_y_train_alabels, df_subj_train, df_x_train_sm)
 # meets requirement 1. Merges the training and the test sets to create one data set.
 #
 
+print("finalising combined dataset ...")
 df_all <- rbind(df_test_all, df_train_all)
 df_all <- rename(df_all, subject_id = V1)
 write.table(df_all, file = "./tidy_measures.txt", sep = ",", row.names = FALSE)
@@ -113,6 +116,8 @@ write.table(df_all, file = "./tidy_measures.txt", sep = ",", row.names = FALSE)
 # each activity and each subject
 #
 
+print("building second tidy dataset ...")
 df_all_melt <- melt(df_all, id.vars = c("activity_name", "subject_id"), variable.name = "measurement_type")
-df_all_cast <- dcast(df_all_melt, activity_name + subject_id ~ measurement_type, mean, value.var = "value")
+df_all_cast <- dcast(df_all_melt, subject_id + activity_name ~ measurement_type, mean, value.var = "value")
 write.table(df_all_cast, file = "./tidy_means.txt", sep = ",", row.names = FALSE)
+print("done.")
